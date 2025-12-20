@@ -27,3 +27,32 @@ jobs:
               -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
               -v "${{ github.workspace }}:/usr/src" \
               sonarsource/sonar-scanner-cli
+name: SAST Pipeline - SonarQube
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sast-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout du code
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Lancer SAST (SonarQube)
+      - name: 🔍 SonarQube SAST Scan
+        run: |
+          if [ -z "${{ secrets.SONAR_HOST_URL }}" ] || [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "⚠️ SonarQube scan skipped (no server accessible or secrets missing)"
+          else
+            docker run --rm \
+              -e SONAR_HOST_URL="${{ secrets.SONAR_HOST_URL }}" \
+              -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
+              -v "${{ github.workspace }}:/usr/src" \
+              sonarsource/sonar-scanner-cli
