@@ -36,8 +36,8 @@ jobs:
         uses: zaproxy/action-baseline@v0.7.0
         with:
           target: 'http://localhost:3000'
-          format: 'html'
-          output: 'zap-report.html'
+          docker_name: 'owasp/zap2docker-stable:latest'
+          cmd_options: '-r zap-report.html'
 
       # 4️⃣ Upload du rapport HTML
       - name: 📤 Upload HTML Report
