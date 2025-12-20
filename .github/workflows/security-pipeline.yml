@@ -19,17 +19,10 @@ jobs:
         with:
           node-version: '18'
 
-      - name: 📂 Install Juice Shop
+      - name: 🚀 Launch Juice Shop via npx
         run: |
-          git clone https://github.com/OWASP/juice-shop.git
-          cd juice-shop
-          npm ci
-
-      - name: 🚀 Launch Juice Shop
-        run: |
-          cd juice-shop
-          nohup npm start &   # démarre Juice Shop en arrière-plan
-          sleep 30            # attendre le démarrage
+          npx juice-shop start &
+          sleep 30
           if curl -s http://localhost:3000 > /dev/null; then
             echo "Juice Shop opérationnel !"
           else
@@ -52,10 +45,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dast-report
-          path: juice-shop/zap-report.html
+          path: zap-report.html
           retention-days: 7
 
       - name: 🧹 Cleanup Juice Shop
         run: |
-          pkill -f "node .*juice-shop"
+          pkill -f "juice-shop"
           echo "Nettoyage terminé"
