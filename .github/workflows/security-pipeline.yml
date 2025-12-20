@@ -11,28 +11,30 @@ jobs:
   dast-scan:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout du code
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: 🚀 Launch Juice Shop via npx
+      # 2️⃣ Pull OWASP Juice Shop Docker image
+      - name: 🐳 Launch Juice Shop via Docker
         run: |
-          npx juice-shop start &
+          docker rm -f juice-shop 2>/dev/null || true
+          docker run -d --name juice-shop -p 3000:3000 bkimminich/juice-shop
+          echo "⏳ Attente 30s pour démarrage..."
           sleep 30
           if curl -s http://localhost:3000 > /dev/null; then
             echo "Juice Shop opérationnel !"
           else
             echo "⚠️ Problème avec Juice Shop"
+            docker logs juice-shop
             exit 1
           fi
 
+      # 3️⃣ Pull OWASP ZAP Docker image
       - name: 🐳 Pull OWASP ZAP
         run: docker pull owasp/zap2docker-stable
 
+      # 4️⃣ Run DAST Scan
       - name: 🎯 Run DAST Scan
         run: |
           docker run --rm --network host owasp/zap2docker-stable \
@@ -41,6 +43,7 @@ jobs:
             -r zap-report.html \
             || echo "Scan terminé (même avec des erreurs)"
 
+      # 5️⃣ Upload HTML Report
       - name: 📤 Upload HTML Report
         uses: actions/upload-artifact@v4
         with:
@@ -48,7 +51,9 @@ jobs:
           path: zap-report.html
           retention-days: 7
 
+      # 6️⃣ Cleanup Juice Shop
       - name: 🧹 Cleanup Juice Shop
         run: |
-          pkill -f "juice-shop"
+          docker stop juice-shop 2>/dev/null || true
+          docker rm juice-shop 2>/dev/null || true
           echo "Nettoyage terminé"
