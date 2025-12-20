@@ -44,7 +44,7 @@ jobs:
           echo "Priorité 1: Injection SQL sur /rest/user/login" >> report.md
           
       - name: 📤 Sauvegarder le rapport
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dast-report
           path: report.md
