@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout du code
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Lancer l'analyse SonarQube
       - name: 🔍 SonarQube SAST Scan
         run: |
           docker run --rm \
