@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sast:
+  sast-scan:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,11 +16,14 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Lancer l'analyse SonarQube
+      # 2️⃣ Lancer SAST (SonarQube)
       - name: 🔍 SonarQube SAST Scan
         run: |
-          docker run --rm \
-            -e SONAR_HOST_URL="http://123.456.78.90:9000" \
-            -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
-            -v "${{ github.workspace }}:/usr/src" \
-            sonarsource/sonar-scanner-cli
+          if [ -z "${{ secrets.SONAR_HOST_URL }}" ] || [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "⚠️ SonarQube scan skipped (no server accessible or secrets missing)"
+          else
+            docker run --rm \
+              -e SONAR_HOST_URL="${{ secrets.SONAR_HOST_URL }}" \
+              -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
+              -v "${{ github.workspace }}:/usr/src" \
+              sonarsource/sonar-scanner-cli
