@@ -1,17 +1,50 @@
-name: Security Pipeline Simple
-on: [push]  # Se lance quand tu pousses du code
+name: Security Tests Pipeline
+on: [push, pull_request]  # Se lance sur push ET pull request
 
 jobs:
-  say-hello:
+  setup-environment:
     runs-on: ubuntu-latest
     steps:
-      - name: Dire bonjour
-        run: echo "🎉 Mon premier pipeline fonctionne !"
-      
-      - name: Montrer le rapport d'Imane
+      - name: 📦 Installer Docker
         run: |
-          echo "📊 BASÉ SUR LE RAPPORT D'IMANE :"
-          echo "- Application: Juice Shop"
-          echo "- Vulnérabilités: 9"
-          echo "- Critique: 1 (SQL Injection)"
-          echo "- Date: 19/12/2025"
+          echo "Installation de Docker..."
+          sudo apt-get update
+          
+      - name: 🚀 Lancer Juice Shop (comme Imane)
+        run: |
+          echo "Lancement de Juice Shop..."
+          docker run -d -p 3000:3000 --name juice-shop bkimminich/juice-shop
+          sleep 30  # Attendre que ça démarre
+          echo "Juice Shop devrait être sur http://localhost:3000"
+
+  dast-tests:
+    needs: setup-environment  # Attendre que Juice Shop soit lancé
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Installer OWASP ZAP
+        run: |
+          echo "Installation de ZAP..."
+          docker pull owasp/zap2docker-stable
+          
+      - name: 🎯 Lancer le scan DAST (comme dans le rapport)
+        run: |
+          echo "Lancement du scan automatisé..."
+          docker run --rm \
+            --network host \
+            owasp/zap2docker-stable \
+            zap-baseline.py -t http://localhost:3000 -J report.json
+          
+      - name: 📊 Générer le rapport
+        run: |
+          echo "Génération du rapport simple..."
+          echo "# Rapport DAST Automatisé" > report.md
+          echo "Date: $(date)" >> report.md
+          echo "Basé sur le travail d'Imane" >> report.md
+          echo "Vulnérabilités attendues: 9" >> report.md
+          echo "Priorité 1: Injection SQL sur /rest/user/login" >> report.md
+          
+      - name: 📤 Sauvegarder le rapport
+        uses: actions/upload-artifact@v3
+        with:
+          name: dast-report
+          path: report.md
