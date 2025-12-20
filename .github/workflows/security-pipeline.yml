@@ -1,0 +1,17 @@
+name: Security Pipeline Simple
+on: [push]  # Se lance quand tu pousses du code
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dire bonjour
+        run: echo "🎉 Mon premier pipeline fonctionne !"
+      
+      - name: Montrer le rapport d'Imane
+        run: |
+          echo "📊 BASÉ SUR LE RAPPORT D'IMANE :"
+          echo "- Application: Juice Shop"
+          echo "- Vulnérabilités: 9"
+          echo "- Critique: 1 (SQL Injection)"
+          echo "- Date: 19/12/2025"
