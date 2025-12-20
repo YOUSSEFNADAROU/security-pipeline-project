@@ -1,4 +1,4 @@
-name: SAST Pipeline - Juice Shop
+name: SAST Pipeline - SonarQube
 
 on:
   push:
@@ -10,34 +10,17 @@ on:
 jobs:
   sast-scan:
     runs-on: ubuntu-latest
+
     steps:
-      # 1️⃣ Checkout
-      - name: Checkout code
+      # 1️⃣ Récupération du code
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Pull SonarQube Docker image
-      - name: Pull SonarQube
-        run: docker pull sonarqube:lts-community
-
-      # 3️⃣ Start SonarQube container
-      - name: Launch SonarQube
-        run: |
-          docker network create sast-network || true
-          docker run -d --name sonarqube-sast --network sast-network -p 9000:9000 sonarqube:lts-community
-          echo "Waiting 60s for SonarQube to start..."
-          sleep 60
-
-      # 4️⃣ Run SonarQube Scanner
-      - name: Run SonarQube Scanner
+      # 2️⃣ Scan SAST avec SonarQube
+      - name: 🔍 Run SonarQube SAST Scan
         run: |
           docker run --rm \
-            --network sast-network \
-            -e SONAR_HOST_URL="http://sonarqube-sast:9000" \
+            -e SONAR_HOST_URL="http://sonarqube:9000" \
             -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
-            -v "${{ github.workspace }}:/usr/src" \
+            -v "${PWD}:/usr/src" \
             sonarsource/sonar-scanner-cli
-
-      # 5️⃣ Optionnel : Stop SonarQube
-      - name: Stop SonarQube
-        if: always()
-        run: docker stop sonarqube-sast && docker rm sonarqube-sast
